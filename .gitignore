@@ -1,0 +1,12 @@
+# dependencias y builds
+node_modules/
+dist/
+*.log
+
+# entorno
+.env
+.env.local
+.env.*.local
+
+# sistema
+.DS_Store

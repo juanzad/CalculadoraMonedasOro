@@ -1,0 +1,8 @@
+{
+  "name": "Remix Calculadora de Monedas de Oro",
+  "description": "Calculadora para cotizar monedas de oro en Argentina, con pesos, precio de onza, descuentos de compra/venta y conversión a pesos (Dólar Blue).",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
