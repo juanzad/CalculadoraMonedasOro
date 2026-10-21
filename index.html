@@ -250,10 +250,42 @@ function App() {
     triggerNotification._t = window.setTimeout(() => setNotification(null), 2800);
   };
 
-  // En esta versión integrada el precio de la onza se carga manualmente.
-  const showManualPriceInfo = () => {
-    triggerNotification("Cargá el precio de la onza a mano o con los botones +/- (la versión integrada no se conecta a Kitco).");
+  // Trae la cotización spot del oro (USD/oz) desde una API pública gratuita.
+  // Kitco no permite leerse directo desde el navegador (CORS); se usa una
+  // fuente equivalente y, si falla, se mantiene el valor cargado a mano.
+  const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+  const [priceStatus, setPriceStatus] = useState(null); // null | "ok" | "err"
+
+  const fetchLiveGoldPrice = async (notify) => {
+    setIsFetchingPrice(true);
+    const sources = [
+      { url: "https://api.gold-api.com/price/XAU", pick: (d) => d && d.price },
+      { url: "https://data-asg.goldprice.org/dbXRates/USD", pick: (d) => d && d.items && d.items[0] && d.items[0].xauPrice },
+    ];
+    for (let i = 0; i < sources.length; i++) {
+      try {
+        const res = await fetch(sources[i].url, { cache: "no-store" });
+        if (!res.ok) continue;
+        const data = await res.json();
+        const price = sources[i].pick(data);
+        if (typeof price === "number" && price > 500 && price < 20000) {
+          const val = parseFloat(price.toFixed(2));
+          setSettings((prev) => ({ ...prev, ouncePriceUsd: val }));
+          setPriceStatus("ok");
+          setIsFetchingPrice(false);
+          if (notify) triggerNotification("Onza actualizada: U$S " + val.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+          return true;
+        }
+      } catch (e) { /* probar la siguiente fuente */ }
+    }
+    setPriceStatus("err");
+    setIsFetchingPrice(false);
+    if (notify) triggerNotification("No se pudo traer la cotización ahora. Cargá el valor a mano.");
+    return false;
   };
+
+  // Al abrir, intenta traer la cotización en vivo una vez.
+  useEffect(() => { fetchLiveGoldPrice(false); }, []);
 
   useEffect(() => { store.set("gold_calc_settings", JSON.stringify(settings)); }, [settings]);
   useEffect(() => { store.set("gold_calc_custom_coins", JSON.stringify(customCoins)); }, [customCoins]);
@@ -449,8 +481,9 @@ function App() {
                     Precio Oro Spot (USD / oz)
                     <span className="text-[10px] text-slate-500 font-mono">(Londres)</span>
                   </label>
-                  <button onClick={showManualPriceInfo} className="text-[10px] text-slate-400 hover:text-amber-400 font-mono flex items-center gap-1 transition-all p-1 bg-slate-800/40 rounded border border-slate-800 cursor-pointer">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Carga manual
+                  <button onClick={() => fetchLiveGoldPrice(true)} disabled={isFetchingPrice} title="Traer la cotización spot del oro en vivo" className="text-[10px] text-slate-400 hover:text-amber-400 font-mono flex items-center gap-1 transition-all p-1 bg-slate-800/40 rounded border border-slate-800 cursor-pointer disabled:opacity-50">
+                    <span className={`w-1.5 h-1.5 rounded-full ${priceStatus === "ok" ? "bg-emerald-500 animate-pulse" : priceStatus === "err" ? "bg-red-500" : "bg-slate-500"}`} />
+                    {isFetchingPrice ? "Actualizando..." : "Actualizar en vivo"}
                   </button>
                 </div>
                 <div className="flex items-center justify-between text-xs font-mono text-slate-500 px-1 mt-0.5">

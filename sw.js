@@ -1,6 +1,7 @@
 // Service worker: cache-first con relleno en tiempo de ejecución.
 // Permite abrir la app sin conexión una vez cargada la primera vez.
-const CACHE = 'monedas-oro-v2';
+// La cotización del oro se pide SIEMPRE en vivo (nunca desde cache).
+const CACHE = 'monedas-oro-v3';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {
@@ -17,6 +18,13 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
+
+  // Precio del oro en vivo: directo a la red, sin cache.
+  if (req.url.indexOf('gold-api.com') !== -1 || req.url.indexOf('goldprice.org') !== -1) {
+    e.respondWith(fetch(req));
+    return;
+  }
+
   e.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req).then((res) => {
