@@ -1,6 +1,6 @@
 // Service worker: cache-first con relleno en tiempo de ejecución.
 // Permite abrir la app sin conexión una vez cargada la primera vez.
-const CACHE = 'monedas-oro-v1';
+const CACHE = 'monedas-oro-v2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (e) => {

@@ -64,6 +64,14 @@ export const PRESET_COINS: GoldCoin[] = [
     purity: 0.9999,
     fineGoldWeight: 31.1035,
     description: "Acuñada por la Real Casa de la Moneda de Canadá, es una de las monedas de oro puro más populares del mundo con ley .9999."
+  },
+  {
+    id: "condor-chile-100",
+    name: "Cóndor (100 Pesos Chile)",
+    totalWeight: 20.339,
+    purity: 0.900,
+    fineGoldWeight: 18.305,
+    description: "Moneda chilena de 100 pesos (acuñada desde 1926), también llamada 'Liberty'. Peso bruto 20,339 g, ley 0,900, con 18,3 g de oro fino."
   }
 ];
 
